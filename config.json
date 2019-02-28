@@ -1,0 +1,41 @@
+{
+  "ipAddress": "192.168.192.227",
+  "channelStrips": [
+    {
+      "index": 0,
+      "enabled": true,
+      "oscAddress": "/ch/32"
+    },
+    {
+      "index": 1,
+      "enabled": true,
+      "oscAddress": "/ch/31"
+    },
+    {
+      "index": 2,
+      "enabled": true,
+      "oscAddress": "/ch/30"
+    },
+    {
+      "index": 3,
+      "enabled": true,
+      "oscAddress": "/auxin/01"
+    },
+    {
+      "index": 4,
+      "enabled": false,
+      "oscAddress": "/main/st"
+    },
+    {
+      "index": 5,
+      "enabled": false,
+      "oscAddress": "/ch/01"
+    }
+  ],
+  "recallButton": {
+    "enabled": true,
+    "sceneNumber": 34,
+    "label": "recall"
+  },
+  "langauge": "en"
+}

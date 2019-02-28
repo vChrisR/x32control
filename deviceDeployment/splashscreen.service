@@ -1,0 +1,9 @@
+[Unit]
+
+[Service]
+ExecStart=/usr/bin/fbi -d /dev/fb0 --noverbose -a /home/pi/x32control/splash.png
+StandardInput=tty
+StandardOutput=tty
+
+[Install]
+WantedBy=basic.target

@@ -1,0 +1,30 @@
+[Unit]
+Description=x32control
+After=network-online.target
+
+[Service]
+WorkingDirectory=/home/pi/x32control
+ExecStart=/home/pi/x32control/x32control
+User=pi
+Restart=always
+KillSignal=SIGINT
+
+PermissionsStartOnly=true
+ExecStartPre=-/bin/chmod a+w /sys/class/backlight/rpi_backlight/brightness
+
+Environment="QT_QPA_EGLFS_HIDECURSOR=1"
+Environment="QT_QPA_EGLFS_DISABLE_INPUT=0"
+Environment="QT_QPA_GENERIC_PLUGINS=evdevmouse:abs"
+Environment="QT_QPA_EGLFS_PHYSICAL_WIDTH=154"
+Environment="QT_QPA_EGLFS_PHYSICAL_HEIGHT=86"
+Environment="QT_QPA_EGLFS_WIDTH=800"
+Environment="QT_QPA_EGLFS_HEIGHT=480"
+Environment="DISPLAY=:0"
+Environment="LD_PRELOAD=/opt/vc/lib/libGLESv2.so /opt/vc/lib/libEGL.so"
+Environment="LD_LIBRARY_PATH=/home/pi/x32control/lib"
+Environment="QT_PLUGIN_PATH=/home/pi/x32control/plugins"
+Environment="QML_IMPORT_PATH=/home/pi/x32control/qml"
+Environment="QML2_IMPORT_PATH=/home/pi/x32control/qml"
+
+[Install]
+WantedBy=multi-user.target
