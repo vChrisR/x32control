@@ -101,7 +101,6 @@ func main() {
 
 			mixer.Send(osc.NewMessage("/xremote"))
 			mixer.RequestMetering()
-			status.SetIpaddress(status.getMyIp())
 		})
 
 	gui.QGuiApplication_Exec()

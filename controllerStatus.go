@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
+	"time"
 
 	"github.com/therecipe/qt/core"
 )
@@ -28,7 +29,15 @@ func (c *controllerStatus) init() {
 		c.SetBrightness(brightness)
 	}
 
-	c.SetIpaddress(c.getMyIp())
+	//Get and set the IP address every 5 seconds.
+	//This will update the IP properly even if the app was started when network was not yet available.
+	//Also account for changed ip address (DHCP)
+	go func() {
+		for {
+			c.SetIpaddress(c.getMyIp())
+			time.Sleep(5 * time.Second)
+		}
+	}()
 }
 
 func (c *controllerStatus) getMyIp() string {
