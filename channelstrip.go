@@ -18,10 +18,9 @@ type ChannelStrip struct {
 	_ int           `property:"faderValue"`
 	_ float32       `property:"meterValue"`
 	_ string        `property:"label"`
-	_ bool          `property:"enabled"`
 	_ func()        `constructor:"init"`
-	_ func(bool)    `signal:"muteclicked,auto"`
-	_ func(float32) `signal:"fadermoved,auto"`
+	_ func(bool)    `slot:"muteclicked,auto"`
+	_ func(float32) `slot:"fadermoved,auto"`
 }
 
 func (c *ChannelStrip) init() {
@@ -31,10 +30,6 @@ func (c *ChannelStrip) init() {
 }
 
 func (c *ChannelStrip) updateFromMixer() error {
-	if !c.IsEnabled() {
-		return nil
-	}
-
 	err := c.mixerChannel.getMute()
 	err = c.mixerChannel.getFaderPosition()
 	err = c.mixerChannel.getName()

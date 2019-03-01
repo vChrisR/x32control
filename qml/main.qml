@@ -4,11 +4,13 @@ import QtQuick.Controls.Material 2.2
 import QtQuick.Layouts 1.2
 
 Item {
+    id: root
     width: 800
     height: 480
 
     property var defaultAccent: Material.Pink
     property var defaultDisabled: Material.Grey
+    property var configuration: JSON.parse(controllerConfig)
 
     Material.accent: defaultAccent
 
@@ -17,7 +19,7 @@ Item {
       width: 800
       height: 480
       layer.enabled: true
-      visible: !busy.busy
+      visible: !QmlRoot.busy
 
       Item {
         id: chStrip0
@@ -25,7 +27,7 @@ Item {
         anchors.top: parent.top
         anchors.left: parent.left
         width: 114
-        visible: strip0.enabled
+        visible: configuration.channelStrips[0].enabled
 
         Rectangle {
           anchors.horizontalCenter: parent.horizontalCenter
@@ -43,7 +45,7 @@ Item {
           height: 329
           to: 100
           orientation: Qt.Vertical
-          value: strip1.faderValue
+          value: strip0.faderValue
           enabled: !lockButton.checked
           onMoved: strip0.fadermoved(position)
           Material.accent: enabled ? defaultAccent : defaultDisabled
@@ -87,7 +89,7 @@ Item {
         anchors.top: parent.top
         anchors.left: chStrip0.right
         width: 114
-        visible: strip1.enabled
+        visible: configuration.channelStrips[1].enabled
 
         Rectangle {
           anchors.horizontalCenter: parent.horizontalCenter
@@ -149,7 +151,7 @@ Item {
         anchors.top: parent.top
         anchors.left: chStrip1.right
         width: 114
-        visible: strip2.enabled
+        visible: configuration.channelStrips[2].enabled
 
         Rectangle {
           anchors.horizontalCenter: parent.horizontalCenter
@@ -211,7 +213,7 @@ Item {
         anchors.top: parent.top
         anchors.left: chStrip2.right
         width: 114
-        visible: strip3.enabled
+        visible: configuration.channelStrips[3].enabled
 
         Rectangle {
           anchors.horizontalCenter: parent.horizontalCenter
@@ -273,7 +275,7 @@ Item {
         anchors.top: parent.top
         anchors.left: chStrip3.right
         width: 114
-        visible: strip4.enabled
+        visible: configuration.channelStrips[4].enabled
 
         Rectangle {
           anchors.horizontalCenter: parent.horizontalCenter
@@ -335,7 +337,8 @@ Item {
         anchors.top: parent.top
         anchors.left: chStrip4.right
         width: 114
-        visible: strip5.enabled
+        visible: configuration.channelStrips[5].enabled
+        enabled: configuration.channelStrips[5].enabled
 
         Rectangle {
           anchors.horizontalCenter: parent.horizontalCenter
@@ -424,8 +427,8 @@ Item {
 
             width: 71
             height: 60
-            visible: recall.enabled
-            text: recall.label
+            visible: configuration.recallButton.enabled
+            text: configuration.recallButton.label
             enabled: !lockButton.checked
             onPressAndHold: confirmRecallDialog.open()
         }
@@ -435,28 +438,28 @@ Item {
     Dialog {
       id: confirmRecallDialog
       modal: true
-      title: qsTr("Confirm %1").arg(recall.label)
+      title: qsTr("Confirm %1").arg(configuration.recallButton.label)
 
       x: (parent.width - width) / 2
       y: (parent.height - height) / 2
 
       standardButtons: Dialog.Ok | Dialog.Cancel
-      onAccepted: recall.recallClicked()
+      onAccepted: QmlRoot.recallClicked(configuration.recallButton.scene)
       Label {
-        text: qsTr("Are you sure you want to do a %1 ?").arg(recall.label)
+        text: qsTr("Are you sure you want to do a %1 ?").arg(configuration.recallButton.label)
       }
     }
 
     Item {
       id: busy_layer
-      visible: busy.busy
+      visible: QmlRoot.busy
 
       BusyIndicator {
         id: busyindicator
         layer.enabled: true
         width: 800
         height: 480
-        running: busy.busy
+        running: QmlRoot.busy
       }
 
       Text {
@@ -494,8 +497,8 @@ Item {
           to: 250
           from: 15
           orientation: Qt.Vertical
-          value: controllerStatus.brightness
-          onMoved: controllerStatus.changeBrightness(value)
+          value: QmlRoot.brightness
+          onMoved: QmlRoot.changeBrightness(value)
         }
 
         Text {
@@ -512,7 +515,7 @@ Item {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 10
-        text: controllerStatus.ipaddress
+        text: QmlRoot.ipaddress
         font.pixelSize: 12
         }
     }
@@ -529,7 +532,7 @@ Item {
       y: (parent.height - height) / 2
 
       standardButtons: Dialog.Ok | Dialog.Cancel
-      onAccepted: controllerStatus.shutdown(restartSelector.checked)
+      onAccepted: QmlRoot.shutdown(restartSelector.checked)
 
       ButtonGroup {
         buttons: shutdownButtons.children

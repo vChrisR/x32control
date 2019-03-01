@@ -1,9 +1,10 @@
 *.cpp
 *.h
 moc.go
-*_cgo_linux_*.go
-*_cgo_linux_*.go
+*_cgo_*.go
+*_cgo_*.go
 *.qrc
 linux/
 rpi/
+rpi2/
 deploy/

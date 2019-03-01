@@ -26,12 +26,12 @@ func main() {
 	view.SetResizeMode(quick.QQuickView__SizeRootObjectToView)
 
 	//Load config
-	mixer, channelStrips, allChStrips, recallButton, language := loadConfig("config.json")
+	mixer, channelStrips, allChStrips, conf := loadConfig("config.json")
 
 	//Set langauge
-	if language != "" && language != "en" {
+	if conf.Language != "" && conf.Language != "en" {
 		var translator = core.NewQTranslator(nil)
-		if loaded := translator.Load(fmt.Sprintf("qml_%v", language), ":/qml", "", ""); loaded == false {
+		if loaded := translator.Load(fmt.Sprintf("qml_%v", conf.Language), ":/qml", "", ""); loaded == false {
 			fmt.Println("unable to load language file for selected language")
 		}
 		core.QCoreApplication_InstallTranslator(translator)
@@ -67,11 +67,18 @@ func main() {
 		view.RootContext().SetContextProperty(fmt.Sprintf("strip%v", chStrip.index), chStrip)
 	}
 
-	view.RootContext().SetContextProperty("recall", recallButton)
-	bi := NewBusyIndicator(nil)
-	view.RootContext().SetContextProperty("busy", bi)
-	status := NewControllerStatus(nil)
-	view.RootContext().SetContextProperty("controllerStatus", status)
+	qmlRoot := initQmlRoot(view, conf)
+	qmlRoot.ConnectRecallClicked(func(scene int) {
+		if err := mixer.RecallScene(int(scene)); err != nil {
+			fmt.Println(err.Error())
+		}
+
+		time.Sleep(500 * time.Millisecond)
+
+		for _, channel := range channelStrips {
+			channel.updateFromMixer()
+		}
+	})
 
 	//load  the qml
 	view.SetSource(core.NewQUrl3("qrc:/qml/main.qml", 0))
@@ -86,7 +93,7 @@ func main() {
 	mixer.TrackConnection(
 		func() {
 			fmt.Println("Disconnected")
-			bi.SetBusy(true)
+			qmlRoot.SetBusy(true)
 			for _, chStrip := range channelStrips {
 				chStrip.lastFaderPosition = 0
 			}
@@ -97,7 +104,7 @@ func main() {
 				chStrip.updateFromMixer()
 			}
 
-			bi.SetBusy(false)
+			qmlRoot.SetBusy(false)
 
 			mixer.Send(osc.NewMessage("/xremote"))
 			mixer.RequestMetering()

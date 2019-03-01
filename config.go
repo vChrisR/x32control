@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"log"
 	"os"
 )
@@ -13,7 +12,7 @@ type config struct {
 	IPAddress     string               `json:"ipAddress"`
 	ChannelStrips []channelStripConfig `json:"channelStrips"`
 	RecallButton  recallButtonConfig   `json:"recallButton"`
-	Langauge      string               `json"langauge:omitEmpty"`
+	Language      string               `json"language:omitEmpty"`
 }
 
 type channelStripConfig struct {
@@ -28,22 +27,17 @@ type recallButtonConfig struct {
 	Label   string `json:"label"`
 }
 
-func loadConfig(fileName string) (*x32, mixerAddressToChStripMap, []*ChannelStrip, *SceneRecall, string) {
+func loadConfig(fileName string) (*x32, mixerAddressToChStripMap, []*ChannelStrip, config) {
 	configFile, err := os.Open("./config.json")
 	if err != nil {
 		log.Fatal("Unable to load config.json")
 	}
 	defer configFile.Close()
 
-	configBytes, err := ioutil.ReadAll(configFile)
-	if err != nil {
-		log.Fatal("Unable to read config.json")
-	}
-
 	var conf config
-	err = json.Unmarshal(configBytes, &conf)
+	err = json.NewDecoder(configFile).Decode(&conf)
 	if err != nil {
-		log.Fatalf("Error loading configuration: %v", err.Error())
+		log.Fatalf("Unable to read config.json: %v", err.Error())
 	}
 
 	if len(conf.ChannelStrips) < int(numChannelStrips) {
@@ -61,7 +55,6 @@ func loadConfig(fileName string) (*x32, mixerAddressToChStripMap, []*ChannelStri
 		enabled := conf.ChannelStrips[i].Enabled
 		chStrip := NewChannelStrip(nil)
 		chStrip.index = conf.ChannelStrips[i].Index
-		chStrip.SetEnabled(enabled)
 		if enabled {
 			oscAddress := conf.ChannelStrips[i].OscAddress
 			chStrip.mixerChannel = NewX32Channel(oscAddress, mixer)
@@ -70,14 +63,5 @@ func loadConfig(fileName string) (*x32, mixerAddressToChStripMap, []*ChannelStri
 		allChStrips[i] = chStrip
 	}
 
-	recallButton := NewSceneRecall(nil)
-	enabled := conf.RecallButton.Enabled
-	recallButton.SetEnabled(enabled)
-	if enabled {
-		recallButton.scene = conf.RecallButton.SceneNr
-		recallButton.mixer = mixer
-		recallButton.SetLabel(conf.RecallButton.Label)
-		recallButton.mixerChannels = mixerAddressToChStrip
-	}
-	return mixer, mixerAddressToChStrip, allChStrips, recallButton, conf.Langauge
+	return mixer, mixerAddressToChStrip, allChStrips, conf
 }
