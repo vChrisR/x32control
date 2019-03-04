@@ -444,7 +444,7 @@ Item {
       y: (parent.height - height) / 2
 
       standardButtons: Dialog.Ok | Dialog.Cancel
-      onAccepted: QmlRoot.recallClicked(configuration.recallButton.scene)
+      onAccepted: QmlRoot.recallClicked(configuration.recallButton.sceneNumber)
       Label {
         text: qsTr("Are you sure you want to do a %1 ?").arg(configuration.recallButton.label)
       }

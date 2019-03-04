@@ -1,5 +1,5 @@
 {
-  "ipAddress": "192.168.192.227",
+  "ipAddress": "192.168.32.80",
   "channelStrips": [
     {
       "index": 0,
@@ -23,8 +23,8 @@
     },
     {
       "index": 4,
-      "enabled": false,
-      "oscAddress": "/main/st"
+      "enabled": true,
+      "oscAddress": "/ch/6"
     },
     {
       "index": 5,

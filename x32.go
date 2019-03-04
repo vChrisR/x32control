@@ -101,6 +101,8 @@ func (x *x32) Receive(timeout time.Duration) (error, *osc.Message) {
 		return err, nil
 	}
 
+	//fmt.Println(msg.String())
+
 	return nil, msg
 }
 
@@ -135,9 +137,9 @@ func (x *x32) RequestMetering() {
 	msg := osc.NewMessage("/batchsubscribe")
 	msg.Append("/metering")
 	msg.Append("/meters/0")
-	msg.Append(int(0))
-	msg.Append(int(0))
-	msg.Append(int(1))
+	msg.Append(int32(0))
+	msg.Append(int32(0))
+	msg.Append(int32(0))
 
 	x.Send(msg)
 

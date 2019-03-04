@@ -15,7 +15,6 @@ type oscProcessor struct {
 }
 
 type MeterData struct {
-	_              int32 //bigendian encoded length of blob. Since we know what length to expect we'll ignore this. Rest of packet is littleendian encoded so mixing it just complicated
 	NumberOfFloats int32
 	Channel        [32]float32
 	Aux            [8]float32
@@ -74,8 +73,8 @@ func (c oscProcessor) applyMessage(chStrip *ChannelStrip, topic, element string,
 
 func (c oscProcessor) meterHandler(msg *osc.Message) {
 	var data MeterData
-	if err := binary.Read(bytes.NewBuffer(msg.Arguments[0].([]byte)), binary.LittleEndian, &data); err != nil {
-		fmt.Printf(err.Error())
+	if err := binary.Read(bytes.NewBuffer(msg.Arguments[0].([]uint8)), binary.LittleEndian, &data); err != nil {
+		fmt.Printf("metering error: %v", err.Error())
 		return
 	}
 
