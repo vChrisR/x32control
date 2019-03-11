@@ -4,44 +4,43 @@ import (
 	"github.com/therecipe/qt/core"
 )
 
-type mixerAddressToChStripMap map[string]*ChannelStrip
-
 type ChannelStrip struct {
-	core.QObject
-
-	index             byte
+	qmlObj            *core.QObject
 	mixerChannel      x32channel
-	cmdsSend          int
 	lastFaderPosition float32
-
-	_ bool          `property:"muted"`
-	_ int           `property:"faderValue"`
-	_ float32       `property:"meterValue"`
-	_ string        `property:"label"`
-	_ func()        `constructor:"init"`
-	_ func(bool)    `slot:"muteclicked,auto"`
-	_ func(float32) `slot:"fadermoved,auto"`
 }
 
-func (c *ChannelStrip) init() {
-	c.SetMuted(true)
-	c.SetFaderValue(0)
-	c.SetMeterValue(0)
+type ChannelStrips map[string]*ChannelStrip
+
+func (c *ChannelStrip) SetFaderValue(value int) {
+	c.qmlObj.SetProperty("faderValue", core.NewQVariant7(value))
+}
+
+func (c *ChannelStrip) SetMuted(value bool) {
+	c.qmlObj.SetProperty("muted", core.NewQVariant11(value))
+}
+
+func (c *ChannelStrip) SetLabel(value string) {
+	c.qmlObj.SetProperty("label", core.NewQVariant14(value))
+}
+
+func (c *ChannelStrip) SetMeterValue(value float32) {
+	sendValue := value
+	if sendValue < 0.25 && sendValue > 0 { //meters are tiny. show 25% when any signal is detected
+		sendValue = 0.25
+	}
+	c.qmlObj.SetProperty("meterValue", core.NewQVariant13(sendValue))
 }
 
 func (c *ChannelStrip) updateFromMixer() error {
 	err := c.mixerChannel.getMute()
 	err = c.mixerChannel.getFaderPosition()
 	err = c.mixerChannel.getName()
+
 	return err
 }
 
-func (c *ChannelStrip) muteclicked(checked bool) {
-	c.SetMuted(checked)
-	c.mixerChannel.setMute(checked)
-}
-
-func (c *ChannelStrip) fadermoved(value float32) {
+func (c *ChannelStrip) sendFaderPosition(value float32) {
 	//Round to value x32 can acutally process
 	intval := int(value * 1023.5)
 	faderPosition := float32(intval) / 1023

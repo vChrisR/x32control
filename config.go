@@ -6,18 +6,14 @@ import (
 	"os"
 )
 
-const numChannelStrips byte = 6
-
 type config struct {
 	IPAddress     string               `json:"ipAddress"`
 	ChannelStrips []channelStripConfig `json:"channelStrips"`
 	RecallButton  recallButtonConfig   `json:"recallButton"`
-	Language      string               `json"language:omitEmpty"`
+	Language      string               `json:"language:omitEmpty"`
 }
 
 type channelStripConfig struct {
-	Index      byte   `json:"index"`
-	Enabled    bool   `json:"enabled"`
 	OscAddress string `json:"oscAddress"`
 }
 
@@ -27,7 +23,9 @@ type recallButtonConfig struct {
 	Label   string `json:"label"`
 }
 
-func loadConfig(fileName string) (*x32, mixerAddressToChStripMap, []*ChannelStrip, config) {
+const maxNumChannelStrips = 9
+
+func loadConfig(fileName string) (*x32, config) {
 	configFile, err := os.Open("./config.json")
 	if err != nil {
 		log.Fatal("Unable to load config.json")
@@ -40,28 +38,17 @@ func loadConfig(fileName string) (*x32, mixerAddressToChStripMap, []*ChannelStri
 		log.Fatalf("Unable to read config.json: %v", err.Error())
 	}
 
-	if len(conf.ChannelStrips) < int(numChannelStrips) {
-		log.Fatalf("channelStrips array in config.json needs %v elements", numChannelStrips)
+	if len(conf.ChannelStrips) == 0 {
+		log.Fatalf("No channelStrips configured in config.json.")
+	}
+
+	if len(conf.ChannelStrips) > int(maxNumChannelStrips) {
+		log.Printf("channelStrips array in config.json contains too many elements. Ony %v channel strips supported. Remaining strips will be ignored.\n", maxNumChannelStrips)
+		conf.ChannelStrips = conf.ChannelStrips[:maxNumChannelStrips]
 	}
 
 	//Create mixer
 	mixer := NewX32(conf.IPAddress, 10023)
 
-	//Create channel strips
-	mixerAddressToChStrip := make(mixerAddressToChStripMap)
-	allChStrips := make([]*ChannelStrip, numChannelStrips)
-
-	for i := byte(0); i < numChannelStrips; i++ {
-		enabled := conf.ChannelStrips[i].Enabled
-		chStrip := NewChannelStrip(nil)
-		chStrip.index = conf.ChannelStrips[i].Index
-		if enabled {
-			oscAddress := conf.ChannelStrips[i].OscAddress
-			chStrip.mixerChannel = NewX32Channel(oscAddress, mixer)
-			mixerAddressToChStrip[oscAddress] = chStrip
-		}
-		allChStrips[i] = chStrip
-	}
-
-	return mixer, mixerAddressToChStrip, allChStrips, conf
+	return mixer, conf
 }

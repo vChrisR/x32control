@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/hypebeast/go-osc/osc"
 	"github.com/therecipe/qt/core"
 	"github.com/therecipe/qt/quick"
 )
@@ -17,19 +18,27 @@ import (
 type QmlRoot struct {
 	core.QObject
 
+	chStrips ChannelStrips
+	mixer    *x32
+
 	_ bool   `property:"busy"`
 	_ string `property:"ipaddress"`
 	_ int    `property:"brightness"`
 
-	_ func() `constructor:"init"`
-
-	_ func(bool) `slot:"shutdown,auto"`
-	_ func(int)  `slot:"changeBrightness,auto"`
-	_ func(int)  `slot:"recallClicked"`
+	_ func()                      `constructor:"init"`
+	_ func(bool)                  `slot:"shutdown,auto"`
+	_ func(int)                   `slot:"changeBrightness,auto"`
+	_ func(int)                   `slot:"recallClicked,auto"`
+	_ func(string, *core.QObject) `slot:"registerChannelStrip,auto"`
+	_ func(string, int)           `signal:"receiveFaderValue"`
+	_ func(string, float32)       `slot:"sendFaderValue,auto"`
+	_ func(string, bool)          `slot:"sendMute,auto"`
 }
 
-func initQmlRoot(view *quick.QQuickView, conf config) *QmlRoot {
+func initQmlRoot(view *quick.QQuickView, conf config, mixer *x32) *QmlRoot {
 	q := NewQmlRoot(nil)
+	q.mixer = mixer
+	q.chStrips = make(ChannelStrips)
 
 	confJson, _ := json.Marshal(conf)
 
@@ -93,6 +102,35 @@ func (q *QmlRoot) shutdown(restart bool) {
 	exec.Command("sudo", "poweroff").Start()
 }
 
+func (q *QmlRoot) recallClicked(scene int) {
+	if err := q.mixer.RecallScene(int(scene)); err != nil {
+		fmt.Println(err.Error())
+	}
+
+	time.Sleep(500 * time.Millisecond)
+
+	for _, channel := range q.chStrips {
+		channel.updateFromMixer()
+	}
+}
+
+func (q *QmlRoot) enableBusy() {
+	q.SetBusy(true)
+	for _, chStrip := range q.chStrips {
+		chStrip.lastFaderPosition = 0
+	}
+}
+
+func (q *QmlRoot) disableBusy() {
+	q.SetBusy(false)
+	for _, chStrip := range q.chStrips {
+		chStrip.updateFromMixer()
+	}
+
+	q.mixer.Send(osc.NewMessage("/xremote"))
+	q.mixer.RequestMetering()
+}
+
 func (q *QmlRoot) changeBrightness(brightness int) {
 	f, err := os.OpenFile("/sys/class/backlight/rpi_backlight/brightness", os.O_RDWR, os.ModeCharDevice)
 
@@ -104,4 +142,20 @@ func (q *QmlRoot) changeBrightness(brightness int) {
 	if err != nil {
 		fmt.Println(err.Error())
 	}
+}
+
+func (q *QmlRoot) registerChannelStrip(addr string, qmlObj *core.QObject) {
+	q.chStrips[addr] = &ChannelStrip{
+		qmlObj:            qmlObj,
+		mixerChannel:      NewX32Channel(addr, q.mixer),
+		lastFaderPosition: 0,
+	}
+}
+
+func (q *QmlRoot) sendFaderValue(address string, pos float32) {
+	q.chStrips[address].sendFaderPosition(pos)
+}
+
+func (q *QmlRoot) sendMute(address string, checked bool) {
+	q.chStrips[address].mixerChannel.setMute(checked)
 }

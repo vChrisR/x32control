@@ -1,35 +1,20 @@
 {
-  "ipAddress": "192.168.32.80",
+  "ipAddress": "172.16.3.133",
   "channelStrips": [
     {
-      "index": 0,
-      "enabled": true,
       "oscAddress": "/ch/32"
     },
     {
-      "index": 1,
-      "enabled": true,
       "oscAddress": "/ch/31"
     },
     {
-      "index": 2,
-      "enabled": true,
       "oscAddress": "/ch/30"
     },
     {
-      "index": 3,
-      "enabled": true,
       "oscAddress": "/auxin/01"
     },
     {
-      "index": 4,
-      "enabled": true,
-      "oscAddress": "/ch/6"
-    },
-    {
-      "index": 5,
-      "enabled": false,
-      "oscAddress": "/ch/01"
+      "oscAddress": "/ch/06"
     }
   ],
   "recallButton": {

@@ -7,7 +7,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/hypebeast/go-osc/osc"
 	"github.com/therecipe/qt/core"
 	"github.com/therecipe/qt/gui"
 	"github.com/therecipe/qt/quick"
@@ -17,16 +16,15 @@ import (
 func main() {
 	//setup some Qt stuff
 	core.QCoreApplication_SetAttribute(core.Qt__AA_EnableHighDpiScaling, true)
-
 	gui.NewQGuiApplication(len(os.Args), os.Args)
-
 	quickcontrols2.QQuickStyle_SetStyle("Material")
 	view := quick.NewQQuickView(nil)
 	view.SetTitle("x32control")
 	view.SetResizeMode(quick.QQuickView__SizeRootObjectToView)
 
 	//Load config
-	mixer, channelStrips, allChStrips, conf := loadConfig("config.json")
+	mixer, conf := loadConfig("config.json")
+	qmlRoot := initQmlRoot(view, conf, mixer)
 
 	//Set langauge
 	if conf.Language != "" && conf.Language != "en" {
@@ -38,9 +36,7 @@ func main() {
 	}
 
 	//Configure mixer
-	chStripProcessor := oscProcessor{
-		mapping: channelStrips,
-	}
+	chStripProcessor := NewOscStripProcessor(qmlRoot)
 
 	mixer.Handle("ch", chStripProcessor.chHandler)
 	mixer.Handle("main", chStripProcessor.chHandler)
@@ -62,24 +58,6 @@ func main() {
 		os.Exit(0)
 	}()
 
-	//create al the context objects for QML
-	for _, chStrip := range allChStrips {
-		view.RootContext().SetContextProperty(fmt.Sprintf("strip%v", chStrip.index), chStrip)
-	}
-
-	qmlRoot := initQmlRoot(view, conf)
-	qmlRoot.ConnectRecallClicked(func(scene int) {
-		if err := mixer.RecallScene(int(scene)); err != nil {
-			fmt.Println(err.Error())
-		}
-
-		time.Sleep(500 * time.Millisecond)
-
-		for _, channel := range channelStrips {
-			channel.updateFromMixer()
-		}
-	})
-
 	//load  the qml
 	view.SetSource(core.NewQUrl3("qrc:/qml/main.qml", 0))
 	view.Show()
@@ -93,21 +71,11 @@ func main() {
 	mixer.TrackConnection(
 		func() {
 			fmt.Println("Disconnected")
-			qmlRoot.SetBusy(true)
-			for _, chStrip := range channelStrips {
-				chStrip.lastFaderPosition = 0
-			}
+			qmlRoot.enableBusy()
 		},
 		func() {
 			fmt.Println("Connected")
-			for _, chStrip := range channelStrips {
-				chStrip.updateFromMixer()
-			}
-
-			qmlRoot.SetBusy(false)
-
-			mixer.Send(osc.NewMessage("/xremote"))
-			mixer.RequestMetering()
+			qmlRoot.disableBusy()
 		})
 
 	gui.QGuiApplication_Exec()

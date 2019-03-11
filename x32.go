@@ -57,6 +57,7 @@ func (x *x32) Start() error {
 	if err := x.GetInfo(); err != nil {
 		return err
 	}
+
 	msgStream := x.listen()
 	x.startDispatcher(msgStream)
 	x.StartXremote()
@@ -142,7 +143,6 @@ func (x *x32) RequestMetering() {
 	msg.Append(int32(0))
 
 	x.Send(msg)
-
 }
 
 func (x *x32) StartMetering() {
@@ -186,79 +186,6 @@ func (x *x32) listen() <-chan *osc.Message {
 			}
 		}
 	}()
-	/*
-		go func() {
-			data := MeterData{
-				NumberOfFloats: 70,
-				Channel:        [32]float32{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5},
-				Aux:            [8]float32{0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75},
-				FxReturn: [4]struct {
-					Left  float32
-					Right float32
-				}{
-					struct {
-						Left  float32
-						Right float32
-					}{Left: 0.5, Right: 0.5},
-					struct {
-						Left  float32
-						Right float32
-					}{Left: 0.5, Right: 0.5},
-					struct {
-						Left  float32
-						Right float32
-					}{Left: 0.5, Right: 0.5},
-					struct {
-						Left  float32
-						Right float32
-					}{Left: 0.5, Right: 0.5}},
-				Bus:    [16]float32{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5},
-				Matrix: [6]float32{0.5, 0.5, 0.5, 0.5, 0.5, 0.5},
-			}
-
-			data2 := MeterData{
-				NumberOfFloats: 70,
-				Channel:        [32]float32{0.75, 0.75, 0.75, 0.75, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75},
-				Aux:            [8]float32{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5},
-				FxReturn: [4]struct {
-					Left  float32
-					Right float32
-				}{
-					struct {
-						Left  float32
-						Right float32
-					}{Left: 0.5, Right: 0.5},
-					struct {
-						Left  float32
-						Right float32
-					}{Left: 0.5, Right: 0.5},
-					struct {
-						Left  float32
-						Right float32
-					}{Left: 0.5, Right: 0.5},
-					struct {
-						Left  float32
-						Right float32
-					}{Left: 0.5, Right: 0.5}},
-				Bus:    [16]float32{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5},
-				Matrix: [6]float32{0.5, 0.5, 0.5, 0.5, 0.5, 0.5},
-			}
-
-			var buf, buf2 bytes.Buffer
-			binary.Write(&buf, binary.LittleEndian, data)
-			binary.Write(&buf2, binary.LittleEndian, data2)
-
-			msg1 := osc.NewMessage("/metering")
-			msg1.Append(buf.Bytes())
-			msg2 := osc.NewMessage("/metering")
-			msg2.Append(buf2.Bytes())
-			for {
-				stream <- msg1
-				time.Sleep(50 * time.Millisecond)
-				stream <- msg2
-				time.Sleep(50 * time.Millisecond)
-			}
-		}()*/
 
 	return stream
 }

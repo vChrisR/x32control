@@ -8,10 +8,11 @@ import (
 	"strings"
 
 	"github.com/hypebeast/go-osc/osc"
+	"github.com/therecipe/qt/core"
 )
 
 type oscProcessor struct {
-	mapping mixerAddressToChStripMap
+	qml *QmlRoot
 }
 
 type MeterData struct {
@@ -26,9 +27,15 @@ type MeterData struct {
 	Matrix [6]float32
 }
 
+func NewOscStripProcessor(qml *QmlRoot) oscProcessor {
+	return oscProcessor{
+		qml: qml,
+	}
+}
+
 func (c oscProcessor) resolveChStrip(address []string) (*ChannelStrip, bool) {
 	mixerAddr := fmt.Sprintf("/%v/%v", address[1], address[2])
-	chStrip, exists := c.mapping[mixerAddr]
+	chStrip, exists := c.qml.chStrips[mixerAddr]
 	return chStrip, exists
 }
 
@@ -57,7 +64,7 @@ func (c oscProcessor) applyMessage(chStrip *ChannelStrip, topic, element string,
 		switch element {
 		case "fader":
 			value := int(arguments[0].(float32) * 100)
-			chStrip.SetFaderValue(value)
+			chStrip.qmlObj.SetProperty("faderValue", core.NewQVariant7(value))
 		case "on":
 			muted := (arguments[0].(int32) == 0)
 			chStrip.SetMuted(muted)
@@ -78,7 +85,7 @@ func (c oscProcessor) meterHandler(msg *osc.Message) {
 		return
 	}
 
-	for key, chStrip := range c.mapping {
+	for key, chStrip := range c.qml.chStrips {
 		go func(k string, c *ChannelStrip) {
 			parts := strings.Split(k, "/")
 			index, _ := strconv.Atoi(parts[2])
