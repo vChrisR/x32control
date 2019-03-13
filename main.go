@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -30,7 +31,7 @@ func main() {
 	if conf.Language != "" && conf.Language != "en" {
 		var translator = core.NewQTranslator(nil)
 		if loaded := translator.Load(fmt.Sprintf("qml_%v", conf.Language), ":/qml", "", ""); loaded == false {
-			fmt.Println("unable to load language file for selected language")
+			log.Println("unable to load language file for selected language")
 		}
 		core.QCoreApplication_InstallTranslator(translator)
 	}
@@ -52,7 +53,7 @@ func main() {
 
 	go func() {
 		<-sigs
-		fmt.Println("Closing...")
+		log.Println("Closing...")
 		mixer.Disconnect()
 		time.Sleep(100 * time.Millisecond)
 		os.Exit(0)
@@ -70,11 +71,11 @@ func main() {
 	//Track the mixer connection. Functions for onDisconnect and onConnect are passed
 	mixer.TrackConnection(
 		func() {
-			fmt.Println("Disconnected")
+			log.Println("Disconnected")
 			qmlRoot.enableBusy()
 		},
 		func() {
-			fmt.Println("Connected")
+			log.Println("Connected")
 			qmlRoot.disableBusy()
 		})
 

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net"
 	"os"
 	"os/exec"
@@ -93,18 +94,18 @@ func (q *QmlRoot) getMyIp() string {
 
 func (q *QmlRoot) shutdown(restart bool) {
 	if restart {
-		fmt.Println("Restarting...")
+		log.Println("Restarting...")
 		exec.Command("sudo", "reboot").Start()
 		return
 	}
 
-	fmt.Println("Shutting down")
+	log.Println("Shutting down")
 	exec.Command("sudo", "poweroff").Start()
 }
 
 func (q *QmlRoot) recallClicked(scene int) {
 	if err := q.mixer.RecallScene(int(scene)); err != nil {
-		fmt.Println(err.Error())
+		log.Println(err.Error())
 	}
 
 	time.Sleep(500 * time.Millisecond)
@@ -140,7 +141,7 @@ func (q *QmlRoot) changeBrightness(brightness int) {
 
 	_, err = fmt.Fprint(f, strconv.Itoa(brightness))
 	if err != nil {
-		fmt.Println(err.Error())
+		log.Println(err.Error())
 	}
 }
 

@@ -6,6 +6,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+	"log"
 	"net"
 	"strings"
 	"time"
@@ -102,8 +103,6 @@ func (x *x32) Receive(timeout time.Duration) (error, *osc.Message) {
 		return err, nil
 	}
 
-	//fmt.Println(msg.String())
-
 	return nil, msg
 }
 
@@ -182,7 +181,7 @@ func (x *x32) listen() <-chan *osc.Message {
 			select {
 			case stream <- msg:
 			default:
-				fmt.Println("Receive buffer overrun, message discarded")
+				log.Println("Receive buffer overrun, message discarded")
 			}
 		}
 	}()
@@ -200,7 +199,7 @@ func (x *x32) TrackConnection(connLost func(), connected func()) {
 				if time.Since(x.lastMessage).Seconds() > 1 {
 					err := x.GetInfo()
 					if err != nil {
-						fmt.Println(err.Error())
+						log.Println(err.Error())
 					}
 
 					if time.Since(x.lastMessage).Seconds() > 3 && x.connected {

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 
@@ -81,7 +82,7 @@ func (c oscProcessor) applyMessage(chStrip *ChannelStrip, topic, element string,
 func (c oscProcessor) meterHandler(msg *osc.Message) {
 	var data MeterData
 	if err := binary.Read(bytes.NewBuffer(msg.Arguments[0].([]uint8)), binary.LittleEndian, &data); err != nil {
-		fmt.Printf("metering error: %v", err.Error())
+		log.Printf("metering error: %v", err.Error())
 		return
 	}
 
