@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hypebeast/go-osc/osc"
 	"github.com/therecipe/qt/core"
+	"github.com/vchrisr/go-osc"
 )
 
 type oscProcessor struct {

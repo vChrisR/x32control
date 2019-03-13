@@ -11,9 +11,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/hypebeast/go-osc/osc"
 	"github.com/therecipe/qt/core"
 	"github.com/therecipe/qt/quick"
+	"github.com/vchrisr/go-osc"
 )
 
 type QmlRoot struct {
@@ -128,7 +128,7 @@ func (q *QmlRoot) disableBusy() {
 		chStrip.updateFromMixer()
 	}
 
-	q.mixer.Send(osc.NewMessage("/xremote"))
+	q.mixer.oscClient.Send(osc.NewMessage("/xremote"))
 	q.mixer.RequestMetering()
 }
 
