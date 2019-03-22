@@ -108,8 +108,7 @@ func (q *QmlRoot) recallClicked(scene int) {
 		log.Println(err.Error())
 	}
 
-	time.Sleep(500 * time.Millisecond)
-
+	//board update done through scene recall are not send out over xremote. So we need to get initial channel status this way.
 	for _, channel := range q.chStrips {
 		channel.updateFromMixer()
 	}

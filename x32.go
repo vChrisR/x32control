@@ -12,19 +12,20 @@ import (
 type oscHandler func(*osc.Message)
 
 type x32 struct {
-	ip          string
-	port        int
-	oscClient   *osc.Client
-	connected   bool
-	lastMessage time.Time
-	oscHandlers map[string]oscHandler
+	ip           string
+	port         int
+	oscClient    osc.Client
+	connected    bool
+	lastMessage  time.Time
+	oscHandlers  map[string]oscHandler
+	currentScene int32
 }
 
 func NewX32(ip string, port int) *x32 {
 	return &x32{
 		ip:          ip,
 		port:        port,
-		oscClient:   osc.NewClient(ip, port),
+		oscClient:   osc.NewClient(ip, port, "", 0),
 		connected:   false,
 		oscHandlers: make(map[string]oscHandler),
 	}
@@ -59,7 +60,18 @@ func (x *x32) Start() error {
 func (x *x32) RecallScene(sceneNr int) error {
 	msgAddr := "/-action/goscene"
 	msg := osc.NewMessage(msgAddr, int32(sceneNr))
-	return x.oscClient.Send(msg)
+	err := x.oscClient.Send(msg)
+	if err != nil {
+		return err
+	}
+
+	// give the board half a second to update itself. Probably way too much time but this works.
+	time.Sleep(500 * time.Millisecond)
+
+	// seems that xremote stops after scene recall. This triggers xremote immidiately without waiting for potientially 10 seconds.
+	x.oscClient.Send(osc.NewMessage("/xremote"))
+
+	return nil
 }
 
 func (x *x32) GetInfo() error {

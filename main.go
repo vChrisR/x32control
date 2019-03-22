@@ -12,6 +12,7 @@ import (
 	"github.com/therecipe/qt/gui"
 	"github.com/therecipe/qt/quick"
 	"github.com/therecipe/qt/quickcontrols2"
+	//	_ "net/http/pprof"
 )
 
 func main() {
@@ -79,5 +80,9 @@ func main() {
 			qmlRoot.disableBusy()
 		})
 
+	/*	go func() {
+			http.ListenAndServe(":8080", nil)
+		}()
+	*/
 	gui.QGuiApplication_Exec()
 }
