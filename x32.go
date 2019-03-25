@@ -133,7 +133,7 @@ func (x *x32) listen() <-chan *osc.Message {
 		defer close(stream)
 
 		for {
-			err, msg := x.oscClient.Receive(500 * time.Millisecond)
+			msg, err := x.oscClient.Receive(500 * time.Millisecond)
 			if err != nil {
 				continue
 			}
