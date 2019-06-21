@@ -1,12 +1,14 @@
 package main
 
 import (
+	"github.com/vchrisr/x32control/internal/x32"
+
 	"github.com/therecipe/qt/core"
 )
 
 type ChannelStrip struct {
 	qmlObj            *core.QObject
-	mixerChannel      x32channel
+	mixerChannel      x32.Channel
 	lastFaderPosition float32
 }
 
@@ -33,9 +35,9 @@ func (c *ChannelStrip) SetMeterValue(value float32) {
 }
 
 func (c *ChannelStrip) updateFromMixer() error {
-	err := c.mixerChannel.getMute()
-	err = c.mixerChannel.getFaderPosition()
-	err = c.mixerChannel.getName()
+	err := c.mixerChannel.GetMute()
+	err = c.mixerChannel.GetFaderPosition()
+	err = c.mixerChannel.GetName()
 
 	return err
 }
@@ -47,7 +49,7 @@ func (c *ChannelStrip) sendFaderPosition(value float32) {
 
 	//Some fader moves might produce the same fader position afder rounding to an x32 value. If the previous value is the same as current we won't send anything.
 	if faderPosition != c.lastFaderPosition {
-		c.mixerChannel.setFaderPosition(faderPosition)
+		c.mixerChannel.SetFaderPosition(faderPosition)
 		c.lastFaderPosition = faderPosition
 	}
 }

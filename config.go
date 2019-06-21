@@ -7,10 +7,10 @@ import (
 )
 
 type config struct {
-	IPAddress     string               `json:"ipAddress"`
+	IPAddress     string               `json:"ipAddress,omitempty"`
 	ChannelStrips []channelStripConfig `json:"channelStrips"`
 	RecallButton  recallButtonConfig   `json:"recallButton"`
-	Language      string               `json:"language:omitEmpty"`
+	Language      string               `json:"language,omitEmpty"`
 }
 
 type channelStripConfig struct {
@@ -25,7 +25,7 @@ type recallButtonConfig struct {
 
 const maxNumChannelStrips = 9
 
-func loadConfig(fileName string) (*x32, config) {
+func loadConfig(fileName string) config {
 	configFile, err := os.Open("./config.json")
 	if err != nil {
 		log.Fatal("Unable to load config.json")
@@ -47,8 +47,5 @@ func loadConfig(fileName string) (*x32, config) {
 		conf.ChannelStrips = conf.ChannelStrips[:maxNumChannelStrips]
 	}
 
-	//Create mixer
-	mixer := NewX32(conf.IPAddress, 10023)
-
-	return mixer, conf
+	return conf
 }

@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -12,6 +13,8 @@ import (
 	"github.com/therecipe/qt/gui"
 	"github.com/therecipe/qt/quick"
 	"github.com/therecipe/qt/quickcontrols2"
+	osc "github.com/vchrisr/go-osc"
+	"github.com/vchrisr/x32control/internal/x32"
 	//	_ "net/http/pprof"
 )
 
@@ -25,8 +28,7 @@ func main() {
 	view.SetResizeMode(quick.QQuickView__SizeRootObjectToView)
 
 	//Load config
-	mixer, conf := loadConfig("config.json")
-	qmlRoot := initQmlRoot(view, conf, mixer)
+	conf := loadConfig("config.json")
 
 	//Set langauge
 	if conf.Language != "" && conf.Language != "en" {
@@ -37,9 +39,33 @@ func main() {
 		core.QCoreApplication_InstallTranslator(translator)
 	}
 
+	// Auto discover mixers on the networks
+	var mixer *x32.X32
+	if conf.IPAddress == "" || conf.IPAddress == "auto" {
+		log.Println("No x32 IP configured. Performing AutoDiscover")
+		discoveredIps, err := x32.AutoDiscover(60) //try AD for 60 seconds
+		if err != nil {
+			log.Printf("Error while running AutoDiscover: %v Exitting now.", err) //if nothing found after 60secs just exit.
+			os.Exit(1)
+		}
+
+		if len(discoveredIps) > 1 {
+			log.Fatalf("More than one x32 discovered. This is currently not supported. Please configure a mixer ip in config.json")
+		}
+
+		log.Printf("Discovered x32: %v", discoveredIps[0])
+		conf.IPAddress = strings.Split(discoveredIps[0], ":")[0]
+	} else {
+		log.Printf("IP configured: %v. Skipping AutoDiscover", conf.IPAddress)
+	}
+
+	client := osc.NewClient(conf.IPAddress, 10023, "", 0)
+	mixer = x32.New(client)
+
+	qmlRoot := initQmlRoot(view, conf, mixer)
+
 	//Configure mixer
 	chStripProcessor := NewOscStripProcessor(qmlRoot)
-
 	mixer.Handle("ch", chStripProcessor.chHandler)
 	mixer.Handle("main", chStripProcessor.chHandler)
 	mixer.Handle("dca", chStripProcessor.chHandler)
@@ -55,7 +81,7 @@ func main() {
 	go func() {
 		<-sigs
 		log.Println("Closing...")
-		mixer.Disconnect()
+		mixer.Stop()
 		time.Sleep(100 * time.Millisecond)
 		os.Exit(0)
 	}()
@@ -66,11 +92,15 @@ func main() {
 
 	//start the mixer interaction
 	if err := mixer.Start(); err != nil {
-		panic(err.Error())
+		log.Fatal(err)
 	}
 
 	//Track the mixer connection. Functions for onDisconnect and onConnect are passed
 	mixer.TrackConnection(
+		func() {
+			log.Println("Connection considered permanently lost after 20 seconds. Exiting...")
+			os.Exit(1)
+		},
 		func() {
 			log.Println("Disconnected")
 			qmlRoot.enableBusy()

@@ -1,0 +1,6 @@
+github.com/gopherjs/gopherjs v0.0.0-20181103185306-d547d1d9531e h1:JKmoR8x90Iww1ks85zJ1lfDGgIiMDuIptTOhJq+zKyg=
+github.com/gopherjs/gopherjs v0.0.0-20181103185306-d547d1d9531e/go.mod h1:wJfORRmW1u3UXTncJ5qlYoELFm8eSnnEO6hX4iZ3EWY=
+github.com/therecipe/qt v0.0.0-20190121211426-e73768bc9bcc h1:zRrCfQYzX8p0yFchHhSschUn4s5kyO7eSXojh0hqaAA=
+github.com/therecipe/qt v0.0.0-20190121211426-e73768bc9bcc/go.mod h1:Iq/oaa39y01vL+lPnuYp68I2X74K+/ACvH8yA1+ubH8=
+github.com/vchrisr/go-osc v0.0.0-20190322105408-7c3cc3d46028 h1:41TLabQCWjxOCPJabyEGrkwB7oUxzp2eUY2jIpNRSGc=
+github.com/vchrisr/go-osc v0.0.0-20190322105408-7c3cc3d46028/go.mod h1:z+FthCQ7/6i2EVtV5S4OTN30bNUnenWC2Env5KLRTe8=

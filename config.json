@@ -1,25 +1,25 @@
 {
-  "ipAddress": "172.16.3.130",
+  "ipAddress": "auto",
   "channelStrips": [
     {
-      "oscAddress": "/ch/32"
+      "oscAddress": "/ch/01"
     },
     {
-      "oscAddress": "/ch/31"
+      "oscAddress": "/ch/02"
     },
     {
-      "oscAddress": "/ch/30"
+      "oscAddress": "/ch/03"
     },
     {
-      "oscAddress": "/auxin/01"
+      "oscAddress": "/ch/04"
     },
     {
-      "oscAddress": "/ch/06"
+      "oscAddress": "/ch/05"
     }
   ],
   "recallButton": {
     "enabled": true,
-    "sceneNumber": 34,
+    "sceneNumber": 1,
     "label": "recall"
   },
   "language": "en"

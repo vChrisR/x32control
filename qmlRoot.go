@@ -14,13 +14,14 @@ import (
 	"github.com/therecipe/qt/core"
 	"github.com/therecipe/qt/quick"
 	"github.com/vchrisr/go-osc"
+	"github.com/vchrisr/x32control/internal/x32"
 )
 
 type QmlRoot struct {
 	core.QObject
 
 	chStrips ChannelStrips
-	mixer    *x32
+	mixer    *x32.X32
 
 	_ bool   `property:"busy"`
 	_ string `property:"ipaddress"`
@@ -36,7 +37,7 @@ type QmlRoot struct {
 	_ func(string, bool)          `slot:"sendMute,auto"`
 }
 
-func initQmlRoot(view *quick.QQuickView, conf config, mixer *x32) *QmlRoot {
+func initQmlRoot(view *quick.QQuickView, conf config, mixer *x32.X32) *QmlRoot {
 	q := NewQmlRoot(nil)
 	q.mixer = mixer
 	q.chStrips = make(ChannelStrips)
@@ -127,7 +128,7 @@ func (q *QmlRoot) disableBusy() {
 		chStrip.updateFromMixer()
 	}
 
-	q.mixer.oscClient.Send(osc.NewMessage("/xremote"))
+	q.mixer.Send(osc.NewMessage("/xremote"))
 	q.mixer.RequestMetering()
 }
 
@@ -147,7 +148,7 @@ func (q *QmlRoot) changeBrightness(brightness int) {
 func (q *QmlRoot) registerChannelStrip(addr string, qmlObj *core.QObject) {
 	q.chStrips[addr] = &ChannelStrip{
 		qmlObj:            qmlObj,
-		mixerChannel:      NewX32Channel(addr, q.mixer),
+		mixerChannel:      x32.NewChannel(addr, q.mixer),
 		lastFaderPosition: 0,
 	}
 }
@@ -157,5 +158,5 @@ func (q *QmlRoot) sendFaderValue(address string, pos float32) {
 }
 
 func (q *QmlRoot) sendMute(address string, checked bool) {
-	q.chStrips[address].mixerChannel.setMute(checked)
+	q.chStrips[address].mixerChannel.SetMute(checked)
 }
